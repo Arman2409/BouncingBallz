@@ -1,90 +1,88 @@
 "use strict";
 class Ball {
-    constructor(x, y, ballRadius, ctx, backgroundSrc) {
-        this.id = 0;
-        this.y = 0;
-        this.x = 0;
-        this.fallHeight = 0;
-        this.radius = 5;
-        this.dy = 15;
-        this.dx = 0;
-        this.isBouncing = false;
-        this.isStoping = false;
-        this.bounceHeight = 0;
-        this.stopSteps = 0;
-        this.stopStepsCount = 0;
-        this.src = "";
-        this.animate = () => {
-            const { x, y, radius } = Object.assign({}, this);
-            requestAnimationFrame(this.animate);
-            c.beginPath();
-            if (this.isBouncing && !this.isStoping) {
-                if (this.y <= innerHeight - this.bounceHeight) {
-                    this.dy = 15;
-                    this.isBouncing = false;
-                    this.fallHeight = innerHeight - this.y;
-                }
-                c.arc(x, y, radius, 0, Math.PI * 2, false);
-            }
-            else if (y >= innerHeight - (radius / 2) && !this.isStoping) {
-                this.dy = -15;
-                this.isBouncing = true;
-                if (this.fallHeight < 200) {
-                    this.isStoping = true;
-                    this.stopSteps = Math.random() * 50;
-                }
-                else {
-                    this.dx = Math.random() * 5;
-                    this.bounceHeight = this.fallHeight / (Math.random() * 4 + 1);
-                }
-            }
-            else if (y >= innerHeight - radius && !this.isStoping) {
-                this.dy = 2;
-                c.ellipse(x, y, radius, radius / 2, 0, 0, Math.PI * 2);
-            }
-            else if (y >= innerHeight - (radius * 2) && !this.isStoping) {
-                this.dy = 2;
-                c.ellipse(x, y, radius, radius / 1.5, 0, 0, Math.PI * 2);
-            }
-            else {
-                if (this.isStoping) {
-                    this.stopStepsCount += 1;
-                    if (this.stopSteps >= this.stopSteps) {
-                        this.isStoping = false;
-                        this.dx = 0;
-                    }
-                    else {
-                        this.dx = 5;
-                    }
-                    this.dy = 0;
-                }
-                c.arc(x, y, radius, 0, Math.PI * 2 + 1, false);
-            }
-            const backgroundImage = new Image();
-            backgroundImage.src = this.src;
-            backgroundImage.onload = () => {
-                console.log("loaded", backgroundImage);
-                var pattern = this.context.createPattern(backgroundImage, "repeat");
-                c.fillStyle = pattern;
-                c.fill();
-            };
-            c.strokeStyle = 2;
-            c.stroke();
-            if (this.dy)
-                this.y += this.dy;
-            if (this.dx)
-                this.x += this.dx;
-        };
+    x = 0;
+    y = 0;
+    dx = 0;
+    dy = 15;
+    radius = 5;
+    bounceHeight = 0;
+    fallHeight = 0;
+    stopSteps = 0;
+    stopStepsCount = 0;
+    rotation = 0;
+    ctx;
+    status = "falling";
+    constructor(x, y, ballRadius, ctx) {
         if (ballRadius)
             this.radius = ballRadius;
         if (x)
             this.x = x;
         if (y)
             this.y = y;
-        if (!ctx)
+        if (!ctx) {
             console.error("Canvas context not provided!");
-        this.src = backgroundSrc;
-        this.context = ctx;
-        this.fallHeight = ctx.canvas.height;
+        }
+        else {
+            this.ctx = ctx;
+            this.fallHeight = ctx.canvas.height;
+        }
+        ;
     }
+    animate = () => {
+        if (typeof this.ctx !== "object") {
+            console.error("Canvas context not provided!");
+            return;
+        }
+        const { x, y, radius } = { ...this };
+        requestAnimationFrame(this.animate);
+        this.ctx.beginPath();
+        if (this.status === "bouncing") {
+            if (this.y <= innerHeight - this.bounceHeight) {
+                this.dy = 10 + Math.random() * 5;
+                this.dx = 0;
+                this.status = "falling";
+                this.fallHeight = innerHeight - this.y;
+            }
+            this.ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+        }
+        else if (y >= innerHeight - (radius / 2.5) && this.status !== "stopping") {
+            this.dy = -15;
+            this.status = "bouncing";
+            if (this.fallHeight < 200) {
+                this.status = "stopping";
+                this.stopSteps = Math.random() * 5;
+            }
+            else {
+                this.dx = Math.random() * 5;
+                this.bounceHeight = this.fallHeight / (Math.random() * 4 + 1);
+            }
+        }
+        else if (y >= innerHeight - radius && this.status !== "stopping") {
+            this.dy = 2;
+            this.ctx.ellipse(x, y, radius + radius / 4, radius / 2, 0, 0, Math.PI * 2);
+        }
+        else if (y >= innerHeight - (radius * 1.5) && this.status !== "stopping") {
+            this.dy = 2;
+            this.ctx.ellipse(x, y, radius + radius / 6, radius / 1.5, 0, 0, Math.PI * 2);
+        }
+        else {
+            if (this.status == "stopping") {
+                this.stopStepsCount += 1;
+                if (this.stopStepsCount >= this.stopSteps) {
+                    this.dx = 0;
+                }
+                else {
+                    this.dx = 5;
+                }
+                this.dy = 0;
+            }
+            this.ctx.arc(x, y, radius, 0, Math.PI * 2 + 1, false);
+            this.rotation += 2;
+        }
+        addBallStyles(x, y, radius, this.rotation, this.ctx);
+        if (this.dy)
+            this.y += this.dy;
+        if (this.dx)
+            this.x += this.dx;
+    };
 }

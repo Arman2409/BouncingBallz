@@ -2,14 +2,14 @@
   "name": "BouncingBallz",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "tsc --w"
   },
   "keywords": [],
-  "author": "",
+  "author": "Arman",
   "license": "ISC",
   "devDependencies": {
-    "sass": "^1.69.5"
+    "tsc": "^2.0.4"
   }
 }

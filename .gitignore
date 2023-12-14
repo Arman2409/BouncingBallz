@@ -1,5 +1,8 @@
 # pnpm 
 pnpm-lock.yaml
 
+#npm
+package-lock.json
+
 # modules 
 node_modules
