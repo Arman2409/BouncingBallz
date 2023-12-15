@@ -2,11 +2,11 @@
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
 const context = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 canvas.addEventListener("click", (event) => {
     const { clientX, clientY } = event;
-    const newBall = new Ball(clientX, clientY, 25, context);
+    const newBall = new Ball(clientX, clientY, ballRadius, context);
     newBall.animate();
 });
 function clear() {
