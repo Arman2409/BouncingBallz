@@ -9,6 +9,6 @@
 4. Install Node.js (https://nodejs.org).
 5. Install dependencies by running 
 >>> npm install
-6. Start Typescript watching server by running 
+6. Start Typescript server by running 
 >>> tsc --w
 7. Make changes and refresh the browser 

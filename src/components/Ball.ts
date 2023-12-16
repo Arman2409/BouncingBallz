@@ -1,18 +1,22 @@
 class Ball {
     x = 0;
     y = 0;
+    // speed horizontally
     dx = 0;
+    // speed vertically
     dy = 0;
     radius = 5;
-    bounceHeight = 0;
-    fallHeight = 0;
-    stopSteps = 0;
-    stopStepsCount = 0;
     rotation = 0;
+    // direction for bouncing or rolling 
+    side: "left" | "right" | null = null;
     colors: string[] = [];
-    ctx;
-    direction: "left" | "right" = "left";
-    status: "bouncing" | "stopping" | "falling" | "stopped" = "falling";
+    bounceHeight = 0;
+    private fallHeight = 0;
+    private rollSteps = 0;
+    private rollStepsCount = 0;
+    private stoppedGradient: GradientCoordinates = {} as GradientCoordinates;
+    private readonly ctx;
+    protected status: BallStatus = "falling";
 
     constructor(
         x: number,
@@ -33,100 +37,95 @@ class Ball {
             this.fallHeight = ctx.canvas.height;
         };
         this.colors = getRandomColors(colorsPerBall);
-        if (innerHeight - (this.y + this.radius) > 0) {
-            this.fall();
+        const { fall, stop } = { ...this };
+        if (innerHeight - (y + ballRadius) > 0) {
+            fall();
         } else {
-            this.status = "stopped";
+            stop()
         }
     }
 
     animate = () => {
-        if (typeof this.ctx !== "object") {
+        const {stoppedGradient, status, ctx,
+            draw, animate, handleFalling, handleRolling, handleBouncing } = { ...this };
+        if (typeof ctx !== "object") {
             console.error("Canvas context not provided!")
             return;
         }
-        const { y, dy, dx,
-            radius, status, bounceHeight,
-            fallHeight, ctx,
-            draw, fall, stop, animate, bounce, handleStopping } = { ...this };
         requestAnimationFrame(animate);
         ctx.beginPath();
-        // border limit handling
-        // if ((this.x <= radius || this.x >= innerWidth - radius) && (this.status !=="falling")) {
-        //     if(this.status === "stopping") {
-
-        //     }Math.round(Math.random()) ? 1 : -1
-        //     this.dx = 0;
-        //     if(this.status === "bouncing") {
-        //         this.dy = fallSpeed;
-        //         this.status = "falling";
-        //         this.fallHeight = innerHeight - this.y;
-        //     }
-        // }
         if (status === "stopped") {
-            draw("circle");
+            draw("circle", undefined, undefined, stoppedGradient);
             return;
         };
-        if (status === "bouncing") {
-            if (y <= innerHeight - bounceHeight) {
-                fall()
-            };
-            draw("circle")
-        } else if (y >= innerHeight - (radius / 1.5)
-            && this.status !== "stopping") {
-            bounce();
-            if (fallHeight < stopHeight) {
-                stop();
-            } else {
-                if (!bounceHeight) this.direction = Math.round(Math.random()) ? "left" : "right";
-                this.dx = this.direction === "left" ? -5 : 5;
-                this.bounceHeight = this.fallHeight / (Math.random() * 4 + 1);
-            }
-        } else if (y >= innerHeight - radius && status !== "stopping") {
-            this.dy = 2;
-            this.draw("ellipse", radius + radius / 4, radius / 2,)
-        } else if (y >= innerHeight - (radius * 1.5) && this.status !== "stopping") {
-            this.dy = 2;
-            this.draw("ellipse", radius + radius / 6, radius / 1.5,)
-            // ctx.ellipse(x, y, radius + radius / 6, radius / 1.5, 0, 0, Math.PI * 2);
-            // addBallStyles(x, y, radius, rotation, colors, ctx);
-            // ctx.restore();
-        } else {
-            if (status === "stopping") {
-                handleStopping();
-            }
-            draw("circle")
+        if (status === "rolling") {
+            handleRolling();
+            draw("circle");
         }
+        if (status === "bouncing") {
+           handleBouncing()
+        }
+        if (status === "falling") handleFalling();
+        const { dx, dy } = { ...this }
         if (dy || dx) this.rotation += 1;
         if (dy) this.y += dy;
         if (dx) this.x += dx;
     }
 
-    private draw = (type: "circle" | "ellipse", ellipseX?: number, ellipseY?: number) => {
+    private draw = (type: "circle" | "ellipse", ellipseX?: number, ellipseY?: number, gradient?: any) => {
         const { x, y, radius, rotation, colors, ctx } = { ...this }
-        if (type === "circle") {
-            ctx.arc(x, y, radius, 0, Math.PI * 2, false);
-        }
-        if (type === "ellipse") {
-            ctx.ellipse(x, y, ellipseX, ellipseY, 0, 0, Math.PI * 2);
-        }
-        addBallStyles(x, y, radius, rotation, colors, ctx);
+        if (type === "circle") ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+        if (type === "ellipse") ctx.ellipse(x + radius/2, y+radius/2, ellipseX, ellipseY, 0, 0, Math.PI * 2);
+        addBallStyles(x, y, radius, rotation, colors, ctx, gradient);
         ctx.restore();
     }
 
-    private handleStopping = () => {
-        const { stopSteps, stopStepsCount } = { ...this };
-        if (stopStepsCount >= stopSteps) {
-            this.dx = 0;
-            this.status = "stopped";
+    private handleRolling = () => {
+        const { x, side, rollSteps, rollStepsCount, radius, stop } = { ...this };
+        if (rollStepsCount >= rollSteps) {
+            stop();
+            return;
         }
-        else {
-            this.dx = this.direction === "left" ? -1 : 1;
-            this.rotation += 8;
+        if(x <= radius || x >= innerWidth - radius){
+            this.side = this.side === "left" ? "right" : "left";
         }
-        this.stopStepsCount += 1;
+        this.dx = side === "left" ? -1 : 1;
+        this.rotation += side === "left" ? -8 : 8;
+        this.rollStepsCount += 1;
         this.dy = 0;
     }
+
+    private handleFalling = () => {
+        const { y, radius, side, fallHeight,
+            draw, roll, bounce } = { ...this };
+        if (y >= innerHeight - (radius / 2)) {
+            if (!side) this.side = Math.round(Math.random()) ? "left" : "right";
+            if (fallHeight < stopHeight) {
+                this.y = innerHeight - radius;
+                roll();
+                return;
+            }
+            bounce();
+        } else if (y >= innerHeight - (radius * 1.5)) {
+            this.dy = 2;
+            draw("ellipse", radius + radius / 6, radius / 1.5);
+        } else if (y >= innerHeight - radius) {
+            this.dy = 2;
+            draw("ellipse", radius + radius / 4, radius / 2);
+        } else draw("circle")
+    }
+
+    private handleBouncing = () => {
+        const { x, y, radius, bounceHeight, draw, fall} = { ...this };
+        if (y <= innerHeight - bounceHeight) {
+            fall();
+        };
+        if((x <= radius || x >= innerWidth - radius)) {
+            this.side = this.side === "left" ? "right" : "left";
+            fall();
+        }
+        draw("circle");
+    };
 
     fall = () => {
         const { y } = { ...this };
@@ -137,12 +136,25 @@ class Ball {
     }
 
     bounce = () => {
-        this.dy = -10;
+        const { side, fallHeight } = { ...this }
+        this.dy = -bounceSpeed;
+        const deviation = bounceDeviationRange[0] + Math.round(Math.random() * bounceDeviationRange[1]);
+        this.dx = side === "left" ? -deviation : deviation;
+        this.bounceHeight = fallHeight * bounceHeightRange[0] + Math.round(Math.random() * (fallHeight * (bounceHeightRange[1] - bounceHeightRange[0])));
         this.status = "bouncing";
     }
 
+    roll = () => {
+        this.status = "rolling";
+        this.rollSteps = 30 + Math.random() * 20;
+    }
+
     stop = () => {
-        this.status = "stopping";
-        this.stopSteps = 30 + Math.random() * 20;
+        const { x, y, radius, rotation } = { ...this };
+        this.dx = 0;
+        this.dy = 0;
+        this.status = "stopped";
+        const currentGradient = getGradientCoordinates(x, y, rotation, radius);
+        this.stoppedGradient = currentGradient;
     }
 }
