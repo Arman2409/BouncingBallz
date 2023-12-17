@@ -10,7 +10,7 @@ canvas.addEventListener("click", (event) => {
     newBall.animate();
 });
 function clear() {
-    requestAnimationFrame(clear);
     context.clearRect(0, 0, innerWidth, innerHeight);
+    requestAnimationFrame(clear);
 }
 clear();

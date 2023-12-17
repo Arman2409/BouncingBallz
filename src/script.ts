@@ -1,4 +1,4 @@
-const canvas:any = document.createElement("canvas");
+const canvas: any = document.createElement("canvas");
 document.body.appendChild(canvas);
 const context = canvas.getContext("2d");
 
@@ -12,7 +12,7 @@ canvas.addEventListener("click", (event: MouseEvent) => {
 })
 
 function clear() {
-    requestAnimationFrame(clear);
     context.clearRect(0, 0, innerWidth, innerHeight);
+    requestAnimationFrame(clear);
 }
 clear();
