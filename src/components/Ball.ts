@@ -29,9 +29,8 @@ class Ball {
         if (typeof ctx !== "object") {
             console.error("Canvas context not provided");
             return;
-        } else {
-            this.ctx = ctx;
-        };
+        }
+        this.ctx = ctx;
         const canvasHeight = ctx.canvas.height;
         this.surfaceHeight = canvasHeight;
         this.surfaceWidth = ctx.canvas.width;
@@ -40,6 +39,7 @@ class Ball {
         this.x = x;
         this.y = y > canvasHeight - ballRadius ? canvasHeight - ballRadius : y;
         this.colors = getRandomColors(colorsPerBall);
+        // generating random side 
         this.side = Math.round(Math.random()) ? "left" : "right";
         const { fall, stop } = { ...this };
         // checking if is above the ground 
@@ -60,8 +60,8 @@ class Ball {
         if (status === "bouncing") handleBouncing();
         if (status === "falling") handleFalling();
         const { dx, dy } = { ...this }
-        if (dy) this.y += dy;
-        if (dx) this.x += dx;
+        this.y += dy;
+        this.x += dx;
         requestAnimationFrame(animate);
     }
 
@@ -85,7 +85,7 @@ class Ball {
     }
 
     private handleRolling = () => {
-        const { side, rollSteps, rollStepsCount, radius,
+        const { side, rollSteps, rollStepsCount,
             stop, draw, isNearBorder } = { ...this };
         if (rollStepsCount >= rollSteps) {
             stop();
@@ -120,7 +120,8 @@ class Ball {
     }
 
     private handleBouncing = () => {
-        const { y, side, bounceHeight, surfaceHeight, draw, fall, isNearBorder } = { ...this };
+        const { y, side, bounceHeight, surfaceHeight,
+            draw, fall, isNearBorder } = { ...this };
         if (y <= surfaceHeight - bounceHeight) fall();
         // checking if the ball is going towards the border 
         if (isNearBorder() === side) fall();

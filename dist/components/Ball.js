@@ -25,10 +25,7 @@ class Ball {
             console.error("Canvas context not provided");
             return;
         }
-        else {
-            this.ctx = ctx;
-        }
-        ;
+        this.ctx = ctx;
         const canvasHeight = ctx.canvas.height;
         this.surfaceHeight = canvasHeight;
         this.surfaceWidth = ctx.canvas.width;
@@ -37,6 +34,7 @@ class Ball {
         this.x = x;
         this.y = y > canvasHeight - ballRadius ? canvasHeight - ballRadius : y;
         this.colors = getRandomColors(colorsPerBall);
+        // generating random side 
         this.side = Math.round(Math.random()) ? "left" : "right";
         const { fall, stop } = { ...this };
         // checking if is above the ground 
@@ -61,10 +59,8 @@ class Ball {
         if (status === "falling")
             handleFalling();
         const { dx, dy } = { ...this };
-        if (dy)
-            this.y += dy;
-        if (dx)
-            this.x += dx;
+        this.y += dy;
+        this.x += dx;
         requestAnimationFrame(animate);
     };
     isNearBorder = () => {
@@ -85,7 +81,7 @@ class Ball {
         ctx.restore();
     };
     handleRolling = () => {
-        const { side, rollSteps, rollStepsCount, radius, stop, draw, isNearBorder } = { ...this };
+        const { side, rollSteps, rollStepsCount, stop, draw, isNearBorder } = { ...this };
         if (rollStepsCount >= rollSteps) {
             stop();
             return;
