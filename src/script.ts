@@ -15,4 +15,4 @@ function clear() {
     requestAnimationFrame(clear);
     context.clearRect(0, 0, innerWidth, innerHeight);
 }
-clear()
+clear();

@@ -4,6 +4,7 @@ const getGradientCoordinates = (
     angle: number,
     radius: number
 ): GradientCoordinates => {
+    // converting the angle into positive value 
     const rotation = angle < 0 ? 360 - Math.abs(angle % 360) : angle % 360;
     const diff = radius / 45 * (rotation - (Math.floor(rotation / 45) * 45));
     if (rotation < 45) return {
@@ -66,8 +67,8 @@ const addBallStyles = (
     ctx: any,
     defaultGradient?: GradientCoordinates
 ): void => {
-    const { startX, startY, endX, endY } = defaultGradient ? { ...defaultGradient } 
-    : getGradientCoordinates(x, y, rotation, radius);
+    const { startX, startY, endX, endY } = defaultGradient ? { ...defaultGradient }
+        : getGradientCoordinates(x, y, rotation, radius);
     var gradient = ctx.createLinearGradient(startX, startY, endX, endY);
     for (let i = 0; i < colorsPerBall; i++) {
         gradient.addColorStop(i * 1 / (colorsPerBall - 1), colors[i]);

@@ -1,5 +1,6 @@
 "use strict";
 const getGradientCoordinates = (x, y, angle, radius) => {
+    // converting the angle into positive value 
     const rotation = angle < 0 ? 360 - Math.abs(angle % 360) : angle % 360;
     const diff = radius / 45 * (rotation - (Math.floor(rotation / 45) * 45));
     if (rotation < 45)
